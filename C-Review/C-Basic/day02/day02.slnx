@@ -1,0 +1,11 @@
+<Solution>
+  <Configurations>
+    <Platform Name="x64" />
+    <Platform Name="x86" />
+  </Configurations>
+  <Project Path="01preview/01preview.vcxproj" />
+  <Project Path="03process/03process.vcxproj" />
+  <Project Path="05scanf_review/05scanf_review.vcxproj" />
+  <Project Path="compile/compile.vcxproj" />
+  <Project Path="printf_scanf_review/printf_scanf_review.vcxproj" />
+</Solution>
