@@ -1,0 +1,10 @@
+<Solution>
+  <Configurations>
+    <Platform Name="x64" />
+    <Platform Name="x86" />
+  </Configurations>
+  <Project Path="01preview/01preview.vcxproj" Id="8f7927d0-06ea-46c2-8aff-ce7e396d6369" />
+  <Project Path="02Array/02Array.vcxproj" Id="10a5ce23-5ec8-4adc-98f6-dc89eb475ed0" />
+  <Project Path="03random_num/03random_num.vcxproj" Id="63d66557-325b-4a9f-898d-0db6cf8f48a6" />
+  <Project Path="04homework/04homework.vcxproj" Id="ad71fd5b-94f6-4a76-b888-4819cc493fe2" />
+</Solution>
