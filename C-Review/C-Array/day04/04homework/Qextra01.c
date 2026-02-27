@@ -15,17 +15,26 @@ int find_aeiou(char arr[],int len) {
 	for (int i = 0; i < len; i++) {
 		if(arr[i] == 'a' || arr[i] == 'e' || arr[i] == 'i' || arr[i] == 'o' || arr[i] == 'u') {
 			count++;
-			}
+		}
 	}
 	return count;
 }
 
-void append_aeiou(char arr[], int len) {
-	int count = find_aeiou(arr, len);
-	
+
+
+void print_arr(char arr[], int len) {
+	for (int i = 0; i < len; i++) {
+		printf("%c ", arr[i]);
+	}
+	printf("\n");
 }
 
 int main() {
-
+	char arr[10] = { 'a','b','e','i','o','0','y','u','k','i' };
+	int len = 10;
+	print_arr(arr, len);
+	printf("元音个数为：%d\n", find_aeiou(arr,len));
+	//append_aeiou(arr, len);
+	print_arr(arr, len);
 	return 0;
 }
