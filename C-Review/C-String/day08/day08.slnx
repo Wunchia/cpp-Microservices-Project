@@ -1,0 +1,11 @@
+<Solution>
+  <Configurations>
+    <Platform Name="x64" />
+    <Platform Name="x86" />
+  </Configurations>
+  <Project Path="01String/01String.vcxproj" />
+  <Project Path="02command_line_arguments/02command_line_arguments.vcxproj" />
+  <Project Path="03sprintf_sscanf/03sprintf_sscanf.vcxproj" />
+  <Project Path="04struct/04struct.vcxproj" />
+  <Project Path="05enum/05enum.vcxproj" />
+</Solution>
