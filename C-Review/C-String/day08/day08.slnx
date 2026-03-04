@@ -3,9 +3,10 @@
     <Platform Name="x64" />
     <Platform Name="x86" />
   </Configurations>
-  <Project Path="01String/01String.vcxproj" />
-  <Project Path="02command_line_arguments/02command_line_arguments.vcxproj" />
-  <Project Path="03sprintf_sscanf/03sprintf_sscanf.vcxproj" />
-  <Project Path="04struct/04struct.vcxproj" />
-  <Project Path="05enum/05enum.vcxproj" />
+  <Project Path="01String/01String.vcxproj" Id="834d0522-16da-4011-acc2-427f58412042" />
+  <Project Path="02command_line_arguments/02command_line_arguments.vcxproj" Id="fc22b2b9-a43b-41b1-bbe9-fbb7484952dc" />
+  <Project Path="03sprintf_sscanf/03sprintf_sscanf.vcxproj" Id="743247ab-1b58-441e-a357-8aa5c1f2f967" />
+  <Project Path="04struct/04struct.vcxproj" Id="262c3a80-04c1-465f-9ec2-dc933fe87393" />
+  <Project Path="05enum/05enum.vcxproj" Id="6568df5b-419b-49fa-a18f-34fc7b29bbe1" />
+  <Project Path="06homework/06homework.vcxproj" Id="f5090028-4013-4b9a-8d45-09097157fefd" />
 </Solution>
