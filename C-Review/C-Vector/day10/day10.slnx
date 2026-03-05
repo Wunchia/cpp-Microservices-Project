@@ -1,0 +1,11 @@
+<Solution>
+  <Configurations>
+    <Platform Name="x64" />
+    <Platform Name="x86" />
+  </Configurations>
+  <Project Path="01preview/01preview.vcxproj" />
+  <Project Path="02homework/02homework.vcxproj" />
+  <Project Path="03calloc_realloc/03calloc_realloc.vcxproj" />
+  <Project Path="04header_file/04header_file.vcxproj" />
+  <Project Path="05vector/05vector.vcxproj" />
+</Solution>
