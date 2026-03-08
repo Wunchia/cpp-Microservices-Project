@@ -7,4 +7,5 @@
   <Project Path="02qsort/02qsort.vcxproj" Id="921719bd-3498-437b-8870-e5427bec99b5" />
   <Project Path="03linklist/03linklist.vcxproj" Id="66d1e75b-09b8-4503-881d-3285c7b80c40" />
   <Project Path="04homework/04homework.vcxproj" Id="de41587a-630b-432c-968d-0fddfbde5463" />
+  <Project Path="05homework_sec/05homework_sec.vcxproj" Id="211626ef-b836-4f5f-b9ae-b4525b0a5cae" />
 </Solution>
