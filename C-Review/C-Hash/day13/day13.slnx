@@ -3,5 +3,7 @@
     <Platform Name="x64" />
     <Platform Name="x86" />
   </Configurations>
-  <Project Path="01preview/01preview.vcxproj" />
+  <Project Path="01preview/01preview.vcxproj" Id="e6a234f2-1bd2-47ec-af0c-ddf4f21d7e3f" />
+  <Project Path="02static_hashmap/02static_hashmap.vcxproj" Id="1812be42-91ba-45f0-9e0e-fe67e18b50d9" />
+  <Project Path="03dynamic_hashmap/03dynamic_hashmap.vcxproj" Id="259c786b-8926-44c2-abe6-4612f3566453" />
 </Solution>
