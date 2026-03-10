@@ -1,0 +1,13 @@
+<Solution>
+  <Configurations>
+    <Platform Name="x64" />
+    <Platform Name="x86" />
+  </Configurations>
+  <Project Path="01select_sort/01select_sort.vcxproj" />
+  <Project Path="02bubble_sort/02bubble_sort.vcxproj" />
+  <Project Path="03insert_sort/03insert_sort.vcxproj" />
+  <Project Path="04shell_sort/04shell_sort.vcxproj" />
+  <Project Path="05merge_sort/05merge_sort.vcxproj" />
+  <Project Path="06quick_sort/06quick_sort.vcxproj" />
+  <Project Path="07heap_sort/07heap_sort.vcxproj" />
+</Solution>
