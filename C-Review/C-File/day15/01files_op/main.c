@@ -89,7 +89,33 @@ void test5() {
     fclose(dest_fp);
 }
 
-int main(void) {
-    test5();
+void copy_binary_file(char*src_path,char*dest_path) {
+    FILE* src_fp = fopen(src_path, "rb");
+    FILE* dest_fp = fopen(dest_path, "wb");
+    if (src_fp == NULL) {
+        printf("open src failed.\n");
+        return;
+    }
+    if (dest_fp == NULL) {
+        printf("open dest failed.\n");
+        fclose(src_fp);
+        return;
+    }
+
+    int ch;
+    while ((ch = fgetc(src_fp)) != EOF) {
+        fputc(ch, dest_fp);
+    }
+
+    fclose(src_fp);
+    fclose(dest_fp);
+}
+
+int main(int argc,char*argv[]) {
+    if (argc != 3) {
+        printf("arg count error!\n");
+        return;
+    }
+    copy_binary_file(argv[1], argv[2]);
     return 0;
 }
