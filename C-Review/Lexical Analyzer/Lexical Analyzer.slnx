@@ -1,0 +1,7 @@
+<Solution>
+  <Configurations>
+    <Platform Name="x64" />
+    <Platform Name="x86" />
+  </Configurations>
+  <Project Path="Lexical Analyzer/Lexical Analyzer.vcxproj" Id="47f799a3-a67e-4d3c-a131-8e4d85007d06" />
+</Solution>
