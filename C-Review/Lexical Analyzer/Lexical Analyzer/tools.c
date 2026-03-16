@@ -5,58 +5,38 @@
 #include "tools.h"
 #include "scanner.h"
 
-typedef struct {
-    // start一开始应该指向源代码字符串的起始位置
-    // 当开始扫描一个新的Token时，这个指针指向Token的第一个字符。
-    const char* start;
-    // 词法分析器当前正在扫描处理的字符,会从某个Token的开头字符开始,一直移到Token结束,指向此Token的下一个字符
-    const char* current;
-    // 当前读取的行
-    int line;
-} Scanner;
 
-// 全局变量结构体对象,后续所有函数的操作都基于同一个scanner结构体对象
-static Scanner scanner;
-static char message[50];		// 该全局变量字符数组用于存储打印errToken时,存放错误信息
-
-void initScanner(const char* source) {
-    // 初始化全局变量scanner
-    // start和current一开始都可以指向源代码字符串的起始位置
-    scanner.start = source;
-    scanner.current = source;
-    scanner.line = 1;
-}
 
 // 下面我给大家提供了很多会用到的辅助函数,建议使用
-// 检查字符c是否是字母或下划线。
-static bool isAlpha(char c) {
+// 检查字符c是否是字母或 下划线。
+bool isAlpha(char c) {
     return (c >= 'a' && c <= 'z') ||
         (c >= 'A' && c <= 'Z') ||
         c == '_';
 }
 
 // 检查字符c是否是数字。
-static bool isDigit(char c) {
+bool isDigit(char c) {
     return c >= '0' && c <= '9';
 }
 
 // 判断词法分析器当前正在处理的字符是不是空字符(即判断是否处理完了)，curr不动
-static bool isAtEnd() {
+bool isAtEnd() {
     return *scanner.current == '\0';
 }
 
 // curr指针前进一个字符,并返回之前curr指针指向的元素
-static char advance() {
+char advance() {
     return *scanner.current++;
 }
 
 // 查看当前正在处理的字符是什么,curr不动
-static char peek() {
+char peek() {
     return *scanner.current;
 }
 
 // 如果当前正在处理的字符不是空字符,那就返回下一个要处理的字符,但curr不动
-static char peekNext() {
+char peekNext() {
     if (isAtEnd()) {
         // 如果已经在处理空字符了，那么直接返回空字符
         return '\0';
@@ -65,7 +45,7 @@ static char peekNext() {
 }
 
 // 检查词法分析器当前正在处理的字符是不是符合预期,如果符合预期,curr前进一位
-static bool match(char expected) {
+bool match(char expected) {
     if (isAtEnd()) {
         // 如果已经在处理空字符了，那么直接返回false
         return false;
@@ -79,7 +59,7 @@ static bool match(char expected) {
 }
 
 // 根据传入的TokenType类型来制造返回一个Token
-static Token makeToken(TokenType type) {
+Token makeToken(TokenType type) {
     Token token;
     token.type = type;
     token.start = scanner.start;    // scanner.start是当前Token的第一个字符
@@ -91,7 +71,7 @@ static Token makeToken(TokenType type) {
 
 // 当遇到不可识别的字符时,就返回一个TOKEN_ERROR类型的Token
 // 比如遇到@，$等不在处理范围内的符号时，比如处理字符串，字符没有对应的右引号时。
-static Token errorToken(const char* message) {
+Token errorToken(const char* message) {
     Token token;
     token.type = TOKEN_ERROR;
     token.start = message;
@@ -100,7 +80,7 @@ static Token errorToken(const char* message) {
     return token;
 }
 
-static void skipWhitespace() {
+void skipWhitespace() {
     // 跳过空白字符: ' ', '\r', '\t', '\n'和注释
     // 注释以'//'开头, 一直到行尾
     // 注意更新scanner.line！
@@ -143,7 +123,7 @@ static void skipWhitespace() {
     }
 }
 // 用于检查当前扫描的Token的类型是不是type 如果是就返回type
-static TokenType checkKeyword(int start, int length, const char* rest, TokenType type) {
+TokenType checkKeyword(int start, int length, const char* rest, TokenType type) {
     /*
         start: 待检查序列的起始字符下标
             比如要检查关键字break，那么在case b的前提下，需要传入reak来进行检查
@@ -176,7 +156,7 @@ static TokenType checkKeyword(int start, int length, const char* rest, TokenType
     return TOKEN_IDENTIFIER;
 }
 
-static TokenType identifierType() {
+TokenType identifierType() {
     // 确定identifier类型主要有两种方式：
     // 1. 将所有的关键字放入哈希表中，然后查表确认 
     // Key-Value 就是"关键字-TokenType" 可以做 但存在额外内存占用且效率不如下一个方式好
@@ -288,7 +268,7 @@ static TokenType identifierType() {
 }
 
 // 当前Token的开头是下划线或字母判断它是不是标识符Token
-static Token identifier() {
+Token identifier() {
     // 判断curr指针当前正在处理的字符是不是 字母 下划线 数字
     while (isAlpha(peek()) || isDigit(peek())) {
         advance();  // 继续前进看下一个字符 直到碰到下一个字符不是字母 下划线 以及数字 结束Token
@@ -301,7 +281,7 @@ static Token identifier() {
     return makeToken(identifierType());
 }
 
-static Token number() {
+Token number() {
     // 简单起见，我们将NUMBER的规则定义如下:
     // 1. NUMBER可以包含数字和最多一个'.'号
     // 2. '.'号前面要有数字
@@ -321,7 +301,7 @@ static Token number() {
     return makeToken(TOKEN_NUMBER);
 }
 
-static Token string() {
+Token string() {
     // 字符串以"开头，以"结尾，而且不能跨行
     // 为了简化工作量
     // 如果下一个字符不是末尾也不是双引号，全部跳过(curr可以记录长度，不用担心)
@@ -339,7 +319,7 @@ static Token string() {
 }
 
 // 进入字符处理模式
-static Token character() {
+Token character() {
     // 字符'开头，以'结尾，而且不能跨行，不支持转义字符，''中间必须只有一个字符
     // 如果下一个字符不是末尾也不是单引号，全部跳过(curr可以记录长度，不用担心)
 
@@ -374,7 +354,7 @@ static Token character() {
 }
 
 // 处理无法识别的字符
-static Token errorTokenWithChar(char character) {
+Token errorTokenWithChar(char character) {
     // 将无法识别的字符是什么输出
     sprintf(message, "Unexpected character: %c", character);
     return errorToken(message);

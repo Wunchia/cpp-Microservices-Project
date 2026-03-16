@@ -11,6 +11,28 @@ typedef struct {
     int line;
 } Scanner;
 
+void initScanner(const char* source);
+void skipWhitespace();
+
+bool isAlpha(charc);
+bool isDigit(char c);
+bool isAtEnd();
+bool match(char expected);
+
+char advance();
+char peek();
+char peekNext();
+
+TokenType checkKeyword(int start, int length, const char* rest, TokenType type);
+TokenType identifierType();
+
+Token makeToken(TokenType type);
+Token errorToken(const char* message);
+Token identifier();
+Token number();
+Token string();
+Token character();
+Token errorTokenWithChar(char character);
 
 #endif // !TOOLS_H
 
