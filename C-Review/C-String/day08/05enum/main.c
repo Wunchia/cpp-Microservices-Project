@@ -23,7 +23,7 @@ typedef enum {
     TEST3
 }Tests;
 
-int speed(enum vip_statues status) {
+int speed(enum vip_status status) {
     if (status == SVIP_0) {
         return 10;
     }
@@ -47,7 +47,7 @@ void test02() {
     Colors c = RED;
     c = TEST1;
     if (c == RED) {
-        printf("enum ÈõÀàĞÍ\n");
+        printf("enum ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½\n");
     }
 }
 
