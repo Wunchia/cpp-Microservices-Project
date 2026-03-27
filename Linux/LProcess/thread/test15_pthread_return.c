@@ -1,28 +1,28 @@
 #include <my_header.h>
 
-long int gCnt=0;
+void func(){
+    printf("func\n");
+    return;
+}
 
 void *thread_func(void *arg){
-    for(int idx=0;idx<100000000;++idx){
-        ++gCnt;
-    }
     printf("I am son\n");
+    func();
+    printf("func over int thread_func\n");
     return NULL;
 }
+
 /*Usage: */
 int main(int argc,char *argv[])
 {
     pthread_t thread_id;
     int ret=pthread_create(&thread_id,NULL,thread_func,NULL);
-    THREAD_ERROR_CHECK(ret,"pthread_creat");
-
-    for(int idx=0;idx<10000000;++idx){
-        ++gCnt;
-    }
-
+    THREAD_ERROR_CHECK(ret,"pthread_create");
     printf("I am main\n");
-    sleep(5);
-    printf("gCnt=%ld\n",gCnt);
+
+    ret=pthread_join(thread_id,NULL);
+    THREAD_ERROR_CHECK(ret,"pthread_join");
+    printf("over\n");
     return 0;
 }
 
