@@ -3,6 +3,10 @@
 void* thread_func(void *arg){
     while(1){
         sleep(1);//sleep函数提供取消点
+        //常见的取消点函数：
+        //会引发阻塞的函数：sleep select
+        //一些IO操作的函数：printf 
+        //不确定就查手册 man 7 pthreads 
     }
     pthread_exit(NULL);
 }
