@@ -6,7 +6,8 @@ void *thread_func_t1(void *arg)
 {
     int ret = pthread_mutex_lock(&lock);
     THREAD_ERROR_CHECK(ret, "pthread_mutex_lock t1 A");
-    printf("A");
+
+    printf("A-->");
 
     ret = pthread_cond_signal(&cond);
     THREAD_ERROR_CHECK(ret, "pthread_cond_signal");
@@ -19,15 +20,13 @@ void *thread_func_t1(void *arg)
     ret = pthread_mutex_lock(&lock);
     THREAD_ERROR_CHECK(ret, "pthread_mutex_lock t1 C");
 
-    while (1 != status)
+    while (2 != status)
     {
         ret = pthread_cond_wait(&cond, &lock);
         THREAD_ERROR_CHECK(ret, "pthread_cond_wait B");
     }
 
-    status=0;
-
-    printf("C");
+    printf("C\n");
 
     ret = pthread_mutex_unlock(&lock);
     THREAD_ERROR_CHECK(ret, "pthread_mutex_unlock t1 C");
@@ -44,13 +43,11 @@ void *thread_func_t2(void *arg)
         ret = pthread_cond_wait(&cond, &lock);
         THREAD_ERROR_CHECK(ret, "pthread_cond_wait A");
     }
-    status = 0;
-    printf("B");
+    printf("B-->");
+    status = 2;
 
     ret = pthread_cond_signal(&cond);
     THREAD_ERROR_CHECK(ret, "pthread_cond_signal_B");
-
-    status = 1;
 
     ret = pthread_mutex_unlock(&lock);
     THREAD_ERROR_CHECK(ret, "pthread_mutex_unlock t2 B");
