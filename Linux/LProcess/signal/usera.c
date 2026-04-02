@@ -19,6 +19,7 @@ int main(int argc,char *argv[])
     int pid_a=getpid();
     int pid_b;
 
+    //握手过程 接收userb的pid，再给对方传自己的pid
     read(pipe_read,&pid_b,sizeof(int));
     write(pipe_write,&pid_a,sizeof(int));
 
