@@ -20,6 +20,16 @@ typedef struct pool_s{
 //根据指定数量创建线程池
 int initPool(pool_t *pPool,int num);
 
+//定义线程的入口函数
+void *threadMain(void *p);
 
+//初始化链接
+int initTcpSocket(int *socketfd,char *ip,char *port);
+
+//添加epoll监听
+int epoll_addfd(int epollfd,int filefd);
+
+//传送文件
+int sendFile(int net_fd);
 
 #endif
