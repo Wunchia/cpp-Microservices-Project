@@ -4,7 +4,7 @@
 #include <my_header.h>
 
 typedef struct node_s{
-    int net_fd;
+    int fd;
     struct node_s *pNext;
 }node_t;
 
