@@ -3,6 +3,8 @@
 /*Usage: */
 int main(int argc,char *argv[])
 {
+    ARGS_CHECK(argc,2);
+
     char *ip="192.168.171.128";
     char *port="12345";
 
@@ -18,8 +20,29 @@ int main(int argc,char *argv[])
     int ret=connect(client_fd,(struct sockaddr*)&addr,sizeof(addr));
     ERROR_CHECK(ret,-1,"connect");
 
+    //向服务端发送需要的文件名
+    char* choice=argv[1];
+    int get_len=strlen(choice);
+    send(client_fd,&get_len,sizeof(int),0);
+    send(client_fd,choice,strlen(choice),0);
+
     int file_name_len=0;
     recv(client_fd,&file_name_len,sizeof(int),MSG_WAITALL);
+
+    //=======错误处理逻辑=========
+    if(-1==file_name_len){
+        int err_len=0;
+        recv(client_fd,&err_len,sizeof(int),MSG_WAITALL);
+
+        char err_msg[100]={0};
+        recv(client_fd,err_msg,err_len,MSG_WAITALL);
+
+        printf("\n[Server Error]:%s\n",err_msg);
+        close(client_fd);
+        return -1;
+    }
+    //===========================
+
     char file_name[60]={0};
     recv(client_fd,file_name,file_name_len,MSG_WAITALL);
 
