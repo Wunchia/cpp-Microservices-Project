@@ -3,10 +3,6 @@
 #include "thread_pool.h"
 #include "send_file.h"
 
-void cleanup_lock(void*p){
-    pthread_mutex_t *lock=(pthread_mutex_t*)p;
-    pthread_mutex_unlock(lock);
-}
 
 void *thread_func(void *arg){
     thread_pool_t *pool=(thread_pool_t*)arg;
@@ -15,18 +11,16 @@ void *thread_func(void *arg){
         int fd=0;
         pthread_mutex_lock(&pool->lock);
 
-        pthread_cleanup_push(cleanup_lock,&pool->lock);
-
-        while(0==pool->queue.size){
-            //这个函数里有取消点 
-            //当等待时遇到主线程的 pthread_cancel 则退出
-            //退出时走cleanup_pop弹出的线程清理函数 释放锁
+        while(0==pool->queue.size&&0==pool->exitFlag){
             pthread_cond_wait(&pool->cond,&pool->lock);
         }
 
-        deQueue(&pool->queue,&fd);
+        if(1==pool->exitFlag){
+            pthread_mutex_unlock(&pool->lock);
+            pthread_exit((void*)NULL);
+        }
 
-        pthread_cleanup_pop(1);//在线程清理函数中 解开互斥锁
+        deQueue(&pool->queue,&fd);
 
         send_file(fd);
 

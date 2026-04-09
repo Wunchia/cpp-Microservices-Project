@@ -67,9 +67,11 @@ int main(int argc,char *argv[])
                 read(fd,buf,sizeof(buf));
                 printf("son's main got the father's signal\n");
 
-                for(int idx=0;idx<pool.thread_num;++idx){
-                    pthread_cancel(pool.thread_id_arr[idx]);
-                }
+                pthread_mutex_lock(&pool.lock);
+                pool.exitFlag=1;//将标志位置为1
+                //标志位重置和广播条件变量的就绪放在同一个锁里原子执行
+                pthread_cond_broadcast(&pool.cond);
+                pthread_mutex_unlock(&pool.lock);
 
                 for(int idx=0;idx<pool.thread_num;++idx){
                     pthread_join(pool.thread_id_arr[idx],NULL);

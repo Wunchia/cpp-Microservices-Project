@@ -3,6 +3,8 @@
 #include "worker.h"
 
 void init_thread_pool(thread_pool_t *pool,int num){
+    pool->exitFlag=0;
+
     pool->thread_num=num;
 
     pthread_mutex_init(&pool->lock,NULL);
