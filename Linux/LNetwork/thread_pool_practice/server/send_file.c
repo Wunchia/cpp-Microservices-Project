@@ -2,9 +2,9 @@
 #include "send_file.h"
 
 void send_error_to_client(int fd,const char*err_msg){
-    int error_flag=-1;
+    off_t error_flag=-1;
     //发送错误信号-1 客户端拿到-1后进入错误处理逻辑
-    send(fd,&error_flag,sizeof(int),MSG_NOSIGNAL);
+    send(fd,&error_flag,sizeof(off_t),MSG_NOSIGNAL);
 
     //向客户端发送错误信息
     int msg_len=strlen(err_msg);
