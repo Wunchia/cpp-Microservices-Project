@@ -45,7 +45,7 @@ void send_file(int fd){
     fstat(file_fd,&st);
     off_t file_len=st.st_size;
 
-    send(fd,&file_len,sizeof(off_t),MSG_WAITALL);
+    send(fd,&file_len,sizeof(off_t),MSG_NOSIGNAL);
     sendfile(fd,file_fd,NULL,file_len);
 
     close(file_fd);
