@@ -20,9 +20,15 @@ private:
     char* _name;
 };
 
+void test3(){
+    Book b1("C++ Primer");
+    Book*b2=new Book("Inside the C++ Object Model");
+    delete b2;
+}
+
 int main(int argc,char *argv[])
 {
-    
+    test3();
     return 0;
 }
 
