@@ -41,8 +41,10 @@ public:
     //析构函数
     ~Computer()
     {
-        delete[] m_brand;
-        m_brand = nullptr;
+        if(m_brand){
+            delete[] m_brand;
+            m_brand = nullptr;
+        }
         cout << "destructor" << endl;
     }
 
