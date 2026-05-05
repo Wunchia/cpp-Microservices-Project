@@ -19,12 +19,13 @@ public:
     }
 
     MyString& operator=(const MyString& rhs){
-        if(this->_data){
-            delete[] this->_data;
+        if(this!=&rhs){
+            char*pTemp=new char[strlen(rhs._data)+1];
+            strcpy(pTemp,rhs._data);
+            delete[] _data;
+            _data=pTemp;
+            cout<<"赋值运算符"<<endl;
         }
-        this->_data=new char[strlen(rhs._data)+1];
-        strcpy(this->_data,rhs._data);
-        cout<<"赋值运算符"<<endl;
         return *this;
     }
 

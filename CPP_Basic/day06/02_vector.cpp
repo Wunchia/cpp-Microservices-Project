@@ -72,6 +72,21 @@ void visitVector(const vector<int> &box){
     cout<<endl;
 }
 
+void visitVector2(const vector<int> &box){
+    for(int i=0;i<box.size();++i){
+        cout<<box[i]<<" ";
+    }
+    cout<<endl;
+}
+
+void visitVector3(const vector<int> &box){
+    auto it=box.begin();
+    for(;it!=box.end();++it){
+        cout<<*it<<" ";
+    }
+    cout<<endl;
+}
+
 void test3(){
     vector<int>box{1,2,3,4,5};
     visitVector(box);
@@ -115,12 +130,82 @@ void test4(){
     cout<<*it<<endl;
 }
 
+//insert erase 插入 删除
+void test5(){
+    vector<int> box{1,2,3,4,5};
+    visitVector(box);
+    auto it=box.begin();
+    ++it;
+    box.insert(it,10);
+    visitVector(box);
+    cout<<"--------->"<<endl;
+    auto it2=box.end();
+    --it2;
+    --it2;
+    box.erase(it2);
+    visitVector(box);
+}
+
+//针对自定义类型处理
+class Point{
+public:
+    Point(int x,int y)
+    :m_x(x)
+    ,m_y(y)
+    {
+        cout<<"Point(int,int)"<<endl;
+    }
+
+    Point(const Point &rhs)
+    :m_x(rhs.m_x)
+    ,m_y(rhs.m_y)
+    {
+        cout<<"Point(const Point&)"<<endl;
+    }
+
+    ~Point(){
+        cout<<"~Point()"<<endl;
+    }
+
+    void print(){
+        cout<<m_x<<" "<<m_y<<endl;
+    }
+private:
+    int m_x;
+    int m_y;
+};
+
+void test6(){
+    vector<Point> box;
+    box.reserve(5);
+    Point pt1{1,2};
+    Point pt2{3,4};
+    Point pt3{5,6};
+    box.push_back(pt1);
+    box.push_back(pt2);
+    box.push_back(pt3);
+
+    box.at(0).print();
+    box.at(1).print();
+    box.at(2).print();
+    cout<<"---------->"<<endl;
+    auto it=box.begin();
+    (*it).print();
+    it->print();
+
+    //还可以进行容器的嵌套
+    //vector套vector
+    vector<vector<int>> box2;
+}
+
 int main(int argc,char *argv[])
 {
     // test1();    
     // test2();
     // test3();
-    test4();
+    // test4();
+    // test5();
+    test6();
     return 0;
 }
 
