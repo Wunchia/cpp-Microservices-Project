@@ -10,9 +10,12 @@ using std::string;
 //利用文件输入流实现能够读取一个文件全部的内容
 void test(const string& filename ){
     ifstream ifs(filename);
-    char ch;
-    while((ch=ifs.get())!=-1){
-        cout<<ch;
+    if(!ifs){
+        std::cerr<<"Error: Cannot open file "<<filename<<endl;
+    }
+    int ch;
+    while((ch=ifs.get())!=EOF){
+        cout<<(char)ch;
     }
 }
 
