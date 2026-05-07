@@ -35,15 +35,15 @@ public:
     }
 
     void info(const string&msg){
-        m_category.info(msg+"[file:"+__FILE__+"]"+"[function:"+__FUNCTION__+"]"+"[line:"+__LINE__+"]");
+        m_category.info(msg+"[file:"+__FILE__+"]"+"[function:"+__FUNCTION__+"]"+"[line:"+std::to_string(__LINE__)+"]");
     }
 
     void debug(const string&msg){
-        m_category.debug(msg);
+        m_category.debug(msg+"[file:"+__FILE__+"]"+"[function:"+__FUNCTION__+"]"+"[line:"+std::to_string(__LINE__)+"]");
     }
 
     void error(const string&msg){
-        m_category.error(msg);
+        m_category.error(msg+"[file:"+__FILE__+"]"+"[function:"+__FUNCTION__+"]"+"[line:"+std::to_string(__LINE__)+"]");
     }
 
 private:
