@@ -1,0 +1,49 @@
+#include <iostream>
+#include <fstream>
+#include <string>
+using std::cin;
+using std::cout;
+using std::endl;
+using std::string;
+using std::ifstream;
+
+
+//循环读取单词
+void test1(){
+    ifstream ifs{"data.txt"};
+    string word;
+    while(ifs>>word){
+        cout<<word<<endl;
+    }
+
+    ifs.close();
+}
+
+//按行读取 string中的getline
+void test2(){
+    ifstream ifs{"data.txt"};
+    string line;
+    //getline（流对象，要存储的数据的变量）
+    std::getline(ifs,line);
+    cout<<line<<endl;
+    ifs.close();
+}
+
+void test3(){
+    ifstream ifs{"data.txt"};
+    string line;
+    //循环读取 getline的返回值仍然是一个流对象
+    while(std::getline(ifs,line)){
+        cout<<line<<endl;
+    }
+    ifs.close();
+}
+
+int main(int argc,char *argv[])
+{
+    test1();
+    test2();
+    test3();
+    return 0;
+}
+
