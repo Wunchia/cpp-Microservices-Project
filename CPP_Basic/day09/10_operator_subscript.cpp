@@ -12,7 +12,7 @@ class CharArray{
 public:
     CharArray(const char* pstr)
    :m_pstr(new char[strlen(pstr)+1]{})
-   ,m_size(0)
+   ,m_size(strlen(pstr))
     {
         cout<<"constructor"<<endl;
         strcpy(m_pstr,pstr);
@@ -22,7 +22,22 @@ public:
         cout<<m_pstr<<endl;
     }
 
-    ~CharArray(){}
+    //operator[] 重载
+    char& operator[](size_t index){
+        if(index<0||index>=m_size){
+            // throw "index is illegal";
+            static char NullChar='\0';
+            return NullChar;
+        }
+        return this->m_pstr[index];
+    }
+
+    ~CharArray(){
+        if(m_pstr){
+            delete[] m_pstr;
+            m_pstr=nullptr;
+        }
+    }
 
 private:
     char* m_pstr;
@@ -43,6 +58,8 @@ void test1(){
 void test2(){
     CharArray ch{"abcd"};
     ch.print();
+    cout<<ch[0]<<endl;
+    ch[0]='A';
     cout<<ch[0]<<endl;
 }
 
