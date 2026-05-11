@@ -33,8 +33,9 @@ void test1()
     // 完整写法
     f = &func2;
     (*f)();
+    f();
 
-    cout << "----------" << endl;
+    cout << "-----别名-----" << endl;
     // 定义一个别名
     typedef void (*F)();
     int a = 1;
@@ -43,6 +44,7 @@ void test1()
 
     cout << "-------------" << endl;
     // 其他写法 C++11后可以用using
+    //using 别名=代指的类型
     using FFF = void (*)();
     int b = 1;
     FFF fff = &func3;

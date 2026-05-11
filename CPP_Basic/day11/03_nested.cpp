@@ -19,10 +19,10 @@ private:
     class Inner1{
     public:
         //内部类的成员函数
-        void func2(){}
+        void func1(){}
     private:
         //内部类的数据成员
-        int m_data2;
+        int m_data1;
     };
 
 public:

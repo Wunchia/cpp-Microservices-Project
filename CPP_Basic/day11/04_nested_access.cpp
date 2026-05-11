@@ -7,72 +7,142 @@ using std::endl;
  * 嵌套类的访问规则
  *
  * 1.在外部类的外部访问内部类的成员
- * 
- * 2.在外部类的内部 访问内部类的成员
- *  创建内部类的对象 Inner inner：通过对象.方式访问内部类的成员。
- * 3.在内部类的内部 访问外部类的成员
+ *      public的内部类，可以创建对象，通过 对象. 访问，
+ *      public的成员可以访问，private不行，除非友元
+ *      private的内部类，不能直接创建对象，因为没有权限，
+ *      除非使用友元，然后再通过 对象. 方式进行访问，
+ *      public的成员可以访问，private不行，除非再使用友元
  *
+ * 2.在外部类的内部 访问内部类的成员
+ *      创建内部类的对象 Inner inner;
+ *      通过 对象. 方式访问内部类的成员。
+ *      可以访问public成员，不能访问private成员
+ *      需要访问私有的，可以使用友元
+ *      修饰内部类的权限是public或者是private已经无意义了
+ *
+ * 3.在内部类的内部 访问外部类的成员
+ *      可以直接创建外部类的对象Outer outer;
+ *      通过 对象. 方式进行访问
+ *      不受外部类成员权限的影响
  */
 
-class Outer{
+// 外部类
+class Outer
+{
 public:
-    class Inner1{
+    int m_outerNum1; // 外部类的公有成员
+    void outerMethod1();
+
+private:
+    int m_outerNum2; // 外部类的私有成员
+    void outerMethod2()
+    {
+        cout << "outerMethod2()" << endl;
+    }
+
+    // 将test1声明为友元函数 为了能够在外部访问Inner2
+    friend void test1();
+
+public:
+    // 内部类
+    class Inner1
+    {
+        // friend class Outer;
     public:
-        void inner1Method1(){
-            cout<<"innner1Method1()"<<endl;
+        void inner1Method1()
+        {
+            cout << "innner1Method1()" << endl;
+            // 内部类的内部 访问外部类的成员
+            // 创建外部类的对象
+            Outer outer;
+            outer.m_outerNum1;
+            outer.m_outerNum2;
+            outer.outerMethod1();
+            outer.outerMethod2();
+            // 无论外部类的成员是什么权限 内->外 都可以访问
         }
-        int m_inner1Num1;
+        int m_inner1Num1; // 公有内部类的公有成员
+
+        friend void Outer::outerMethod1();
+        friend void test1();
+
     private:
-        void inner1Method2(){
-            cout<<"innner1Method2()"<<endl;
+        void inner1Method2()
+        {
+            cout << "innner1Method2()" << endl;
         }
-        int m_inner1Num2;
+        int m_inner1Num2; // 公有内部类的私有成员
     };
 
 private:
-    class Inner2{
+    class Inner2
+    {
     public:
-        void inner2Method1(){
-            cout<<"innner1Method1()"<<endl;
+        void inner2Method1()
+        {
+            cout << "innner1Method1()" << endl;
+            // 内部类的内部 访问外部类的成员
+            // 创建外部类的对象
+            Outer outer;
+            outer.m_outerNum1;
+            outer.m_outerNum2;
+            outer.outerMethod1();
+            outer.outerMethod2();
+            // 无论外部类的成员是什么权限 内->外 都可以访问
         }
-        int m_inner2Num1;
+        int m_inner2Num1; // 私有内部类的公有成员
+
+        friend void Outer::outerMethod1();
+        friend void test1();
+
     private:
-        void inner2Method2(){
-            cout<<"innner1Method2()"<<endl;
+        void inner2Method2()
+        {
+            cout << "innner1Method2()" << endl;
         }
-        int m_inner2Num2;
-
+        int m_inner2Num2; // 私有内部类的私有成员
     };
-
-public:
-    int m_outerNum1;
-    void outer(){
-        cout<<"outerMethod1()"<<endl;
-    }
-private:
-    int m_outerNum2;
-    void outer(){
-        cout<<"outerMethod2()"<<endl;
-    }
-
 };
 
-void test1(){
-    //在外部类的外部访问内部类的成员函数，
-    //通过创建内部类的对象，通过对象方式访问
-    //使用类名作用域，标记一下这个内部类是在哪个外部类中定义的
+void Outer::outerMethod1()
+{
+    cout << "outerMethod1()" << endl;
+    // 在外部类的内部 访问内部类的成员
+    // 创建内部类对象
+    // public修饰的内部类
+    Inner1 inner1;
+    inner1.m_inner1Num1; // public 成员 可访问
+    inner1.m_inner1Num2; // private 成员 不可访问 需要友元
+    inner1.inner1Method1();
+    inner1.inner1Method2();
+
+    // private修饰的内部类
+    Inner2 inner2;
+    inner2.m_inner2Num1; // public 可访问
+    inner2.m_inner2Num2; // private 不可访问
+}
+
+void test1()
+{
+    // 在外部类的外部访问内部类的成员函数，
+    // 通过创建内部类的对象，通过对象方式访问
+    // 使用类名作用域，标记一下这个内部类是在哪个外部类中定义的
 
     Outer::Inner1 inner1;
-    innner::inner1Method1();
-    innner::m_inner1Method2();
-    innner::inner1Method1();
-    innner::inner1Method2();   
+    inner1.m_inner1Num1; // public修饰的成员 可访问
+    inner1.m_inner1Num2; // private修饰的成员 不可访问
+    inner1.inner1Method1();
+    inner1.inner1Method2();
 
+    Outer::Inner2 inner2;
+    inner2.m_inner2Num1; // public修饰的成员 可访问
+    inner2.m_inner2Num2; // private修饰的成员 不可访问
+    inner2.inner2Method1();
+    inner2.inner2Method2();
 }
 
-int main(int argc,char *argv[])
+int main(int argc, char *argv[])
 {
-    
+    test1();
     return 0;
 }
-
