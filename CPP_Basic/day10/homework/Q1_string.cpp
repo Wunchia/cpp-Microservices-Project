@@ -9,19 +9,25 @@ using namespace std;
 class String
 {
 public:
-    String():_pstr(new char[1])
+    String()
+    :_pstr(new char[1])
     {
         _pstr[0] = '\0';
     };
-    String(const char *pstr) : _pstr(new char[strlen(pstr) + 1])
+    
+    String(const char *pstr) 
+    : _pstr(new char[strlen(pstr) + 1])
     {
         cout << "constructor" << endl;
         strcpy(_pstr, pstr);
     }
-    String(const String &s) : _pstr(new char[strlen(s._pstr) + 1])
+    
+    String(const String &s) 
+    : _pstr(new char[strlen(s._pstr) + 1])
     {
         strcpy(_pstr, s._pstr);
     }
+    
     ~String()
     {
         if (_pstr != nullptr)
@@ -33,7 +39,7 @@ public:
 
     String &operator=(const String &s)
     {
-        if (*this != s)
+        if (this != &s)
         {
             delete[] _pstr;
             _pstr = new char[strlen(s._pstr) + 1];
@@ -104,52 +110,52 @@ private:
     char *_pstr;
 };
 
-String operator+(const String &lhs, const String &rhs)
+inline String operator+(const String &lhs, const String &rhs)
 {
     String tmp(lhs);
     tmp += rhs;
     return tmp;
 }
-String operator+(const String &lhs, const char *rhs)
+inline String operator+(const String &lhs, const char *rhs)
 {
     return lhs + String(rhs);
 }
-String operator+(const char *lhs, const String &rhs)
+inline String operator+(const char *lhs, const String &rhs)
 {
     return rhs + String(lhs);
 }
 
-bool operator==(const String &lhs, const String &rhs)
+inline bool operator==(const String &lhs, const String &rhs)
 {
     return strcmp(lhs._pstr, rhs._pstr) == 0;
 }
 
-bool operator!=(const String &lhs, const String &rhs)
+inline bool operator!=(const String &lhs, const String &rhs)
 {
     return !(lhs == rhs);
 }
 
-bool operator<(const String &lhs, const String &rhs)
+inline bool operator<(const String &lhs, const String &rhs)
 {
     return strcmp(lhs._pstr, rhs._pstr) < 0;
 }
 
-bool operator>(const String &lhs, const String &rhs)
+inline bool operator>(const String &lhs, const String &rhs)
 {
     return rhs < lhs;
 }
 
-bool operator<=(const String &lhs, const String &rhs)
+inline bool operator<=(const String &lhs, const String &rhs)
 {
     return !(rhs < lhs);
 }
 
-bool operator>=(const String &lhs, const String &rhs)
+inline bool operator>=(const String &lhs, const String &rhs)
 {
     return !(lhs < rhs);
 }
 
-ostream &operator<<(ostream &os, const String &s)
+inline ostream &operator<<(ostream &os, const String &s)
 {
     os << s._pstr;
     return os;
