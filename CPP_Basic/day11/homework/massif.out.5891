@@ -1,0 +1,67 @@
+desc: (none)
+cmd: ./a.out
+time_unit: i
+#-----------
+snapshot=0
+#-----------
+time=0
+mem_heap_B=0
+mem_heap_extra_B=0
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=1
+#-----------
+time=2260289
+mem_heap_B=72704
+mem_heap_extra_B=8
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=2
+#-----------
+time=2374879
+mem_heap_B=73728
+mem_heap_extra_B=16
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=3
+#-----------
+time=2392080
+mem_heap_B=73728
+mem_heap_extra_B=16
+mem_stacks_B=0
+heap_tree=peak
+n2: 73728 (heap allocation functions) malloc/new/new[], --alloc-fns, etc.
+ n1: 72704 0x490C939: ??? (in /usr/lib/x86_64-linux-gnu/libstdc++.so.6.0.30)
+  n1: 72704 0x400647D: call_init.part.0 (dl-init.c:70)
+   n1: 72704 0x4006567: call_init (dl-init.c:33)
+    n1: 72704 0x4006567: _dl_init (dl-init.c:117)
+     n0: 72704 0x40202C9: ??? (in /usr/lib/x86_64-linux-gnu/ld-linux-x86-64.so.2)
+ n1: 1024 0x4B0CBA3: _IO_file_doallocate (filedoalloc.c:101)
+  n1: 1024 0x4B1BCDF: _IO_doallocbuf (genops.c:347)
+   n1: 1024 0x4B1AF5F: _IO_file_overflow@@GLIBC_2.2.5 (fileops.c:744)
+    n1: 1024 0x4B196D4: _IO_new_file_xsputn (fileops.c:1243)
+     n1: 1024 0x4B196D4: _IO_file_xsputn@@GLIBC_2.2.5 (fileops.c:1196)
+      n1: 1024 0x4B0DFD6: fwrite (iofwrite.c:39)
+       n1: 1024 0x4990AF7: std::ostreambuf_iterator<char, std::char_traits<char> > std::num_put<char, std::ostreambuf_iterator<char, std::char_traits<char> > >::_M_insert_int<long>(std::ostreambuf_iterator<char, std::char_traits<char> >, std::ios_base&, char, long) const (in /usr/lib/x86_64-linux-gnu/libstdc++.so.6.0.30)
+        n1: 1024 0x499F119: std::ostream& std::ostream::_M_insert<long>(long) (in /usr/lib/x86_64-linux-gnu/libstdc++.so.6.0.30)
+         n1: 1024 0x10932C: Complex::print() const (Q9_2.cpp:14)
+          n0: 1024 0x109252: main (Q9_2.cpp:43)
+#-----------
+snapshot=4
+#-----------
+time=2392080
+mem_heap_B=1024
+mem_heap_extra_B=8
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=5
+#-----------
+time=2393184
+mem_heap_B=0
+mem_heap_extra_B=0
+mem_stacks_B=0
+heap_tree=empty

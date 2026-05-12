@@ -1,0 +1,64 @@
+--------------------------------------------------------------------------------
+Command:            ./a.out
+Massif arguments:   (none)
+ms_print arguments: massif.out.5891
+--------------------------------------------------------------------------------
+
+
+    KB
+72.02^                                                                       #
+     |                                                                    :::#
+     |                                                                    :  #
+     |                                                                    :  #
+     |                                                                    :  #
+     |                                                                    :  #
+     |                                                                    :  #
+     |                                                                    :  #
+     |                                                                    :  #
+     |                                                                    :  #
+     |                                                                    :  #
+     |                                                                    :  #
+     |                                                                    :  #
+     |                                                                    :  #
+     |                                                                    :  #
+     |                                                                    :  #
+     |                                                                    :  #
+     |                                                                    :  #
+     |                                                                    :  #
+     |                                                                    :  #
+   0 +----------------------------------------------------------------------->Mi
+     0                                                                   2.282
+
+Number of snapshots: 6
+ Detailed snapshots: [3 (peak)]
+
+--------------------------------------------------------------------------------
+  n        time(i)         total(B)   useful-heap(B) extra-heap(B)    stacks(B)
+--------------------------------------------------------------------------------
+  0              0                0                0             0            0
+  1      2,260,289           72,712           72,704             8            0
+  2      2,374,879           73,744           73,728            16            0
+  3      2,392,080           73,744           73,728            16            0
+99.98% (73,728B) (heap allocation functions) malloc/new/new[], --alloc-fns, etc.
+->98.59% (72,704B) 0x490C939: ??? (in /usr/lib/x86_64-linux-gnu/libstdc++.so.6.0.30)
+| ->98.59% (72,704B) 0x400647D: call_init.part.0 (dl-init.c:70)
+|   ->98.59% (72,704B) 0x4006567: call_init (dl-init.c:33)
+|     ->98.59% (72,704B) 0x4006567: _dl_init (dl-init.c:117)
+|       ->98.59% (72,704B) 0x40202C9: ??? (in /usr/lib/x86_64-linux-gnu/ld-linux-x86-64.so.2)
+|         
+->01.39% (1,024B) 0x4B0CBA3: _IO_file_doallocate (filedoalloc.c:101)
+  ->01.39% (1,024B) 0x4B1BCDF: _IO_doallocbuf (genops.c:347)
+    ->01.39% (1,024B) 0x4B1AF5F: _IO_file_overflow@@GLIBC_2.2.5 (fileops.c:744)
+      ->01.39% (1,024B) 0x4B196D4: _IO_new_file_xsputn (fileops.c:1243)
+        ->01.39% (1,024B) 0x4B196D4: _IO_file_xsputn@@GLIBC_2.2.5 (fileops.c:1196)
+          ->01.39% (1,024B) 0x4B0DFD6: fwrite (iofwrite.c:39)
+            ->01.39% (1,024B) 0x4990AF7: std::ostreambuf_iterator<char, std::char_traits<char> > std::num_put<char, std::ostreambuf_iterator<char, std::char_traits<char> > >::_M_insert_int<long>(std::ostreambuf_iterator<char, std::char_traits<char> >, std::ios_base&, char, long) const (in /usr/lib/x86_64-linux-gnu/libstdc++.so.6.0.30)
+              ->01.39% (1,024B) 0x499F119: std::ostream& std::ostream::_M_insert<long>(long) (in /usr/lib/x86_64-linux-gnu/libstdc++.so.6.0.30)
+                ->01.39% (1,024B) 0x10932C: Complex::print() const (Q9_2.cpp:14)
+                  ->01.39% (1,024B) 0x109252: main (Q9_2.cpp:43)
+                    
+--------------------------------------------------------------------------------
+  n        time(i)         total(B)   useful-heap(B) extra-heap(B)    stacks(B)
+--------------------------------------------------------------------------------
+  4      2,392,080            1,032            1,024             8            0
+  5      2,393,184                0                0             0            0
