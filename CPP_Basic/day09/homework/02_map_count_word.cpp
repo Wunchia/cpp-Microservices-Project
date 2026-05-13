@@ -22,7 +22,7 @@ public:
             preprocess(word);
             if(word.empty()) continue;
 
-            _dict[word]++;
+            ++_dict[word];
         }
         ifs.close();
     }
