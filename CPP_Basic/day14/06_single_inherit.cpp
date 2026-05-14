@@ -6,7 +6,7 @@ using std::endl;
 /*
  * 单继承下的子类对象的创建和销毁过程
  * 
- * 
+ * 创建过程：先父后子 
  */
 
 class Father{
@@ -21,6 +21,9 @@ public:
         cout<<"Father(int)"<<endl;
     }
 
+    ~Father(){
+        cout<<"~Father()"<<endl;
+    }
     int m_f;
 };
 
@@ -31,12 +34,16 @@ public:
         cout<<"Son()"<<endl;
     }
 
-    //
+    //有参构造
     Son(int f,int s)
     :Father(f)
     ,m_s(s)
     {
         cout<<"Son(int,int)"<<endl;
+    }
+
+    ~Son(){
+        cout<<"~Son()"<<endl;
     }
 
     int m_s;
@@ -53,8 +60,8 @@ void test1(){
 }
 
 void test2(){
-    Son son1;
-    cout<<sizeof(son1)<<endl;
+    // Son son1;
+    // cout<<sizeof(son1)<<endl;
     cout<<"--------------------"<<endl;
     Son son2{1,2};
 }
