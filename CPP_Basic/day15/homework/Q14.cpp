@@ -53,13 +53,13 @@ private:
 class Employee : public Person
 {
 public:
-    Employee(Person p,char* dept,double salary)
+    Employee(const Person &p,char* dept,double salary)
     :Person(p)
     ,_dept(new char[strlen(dept)+1]{})
     ,_salary(salary)
     {
         strcpy(_dept,dept);
-        avg_salary=(((avg_salary*member_count++)+_salary)/member_count);
+        total_salary+=_salary;
     }
 
     Employee(const Employee&rhs)
@@ -69,7 +69,7 @@ public:
     {
         strcpy(_dept,rhs._dept);
         ++member_count;
-        avg_salary+=((avg_salary+_salary)/member_count);
+        total_salary+=_salary;
     }
 
     Employee&operator=(const Employee&rhs){
@@ -79,8 +79,9 @@ public:
             strcpy(tmp,rhs._dept);
             delete[]_dept;
             _dept=tmp;
-            avg_salary=(((avg_salary*member_count)-_salary+rhs._salary)/member_count);
+            total_salary-=_salary;
             _salary=rhs._salary;
+            total_salary+=_salary;
         }
         return *this;
     }
@@ -89,7 +90,7 @@ public:
         if(_dept){
             delete[] _dept;
         }
-        avg_salary=(((avg_salary*member_count--)-_salary)/member_count);
+        total_salary-=_salary;
     }
 
     virtual void display()const override{
@@ -100,18 +101,18 @@ public:
 
     static void getAvg_Salary(){
         cout<<"======================"<<endl;
-        cout<<"avg_salary:"<<avg_salary<<endl;
+        cout<<"avg_salary:"<<(total_salary/member_count)<<endl;
         cout<<"======================"<<endl;
     }
 
 private:
     char* _dept;
     double _salary;
-    static double avg_salary;
+    static double total_salary;
     static int member_count;
 };
 
-double Employee::avg_salary=0;
+double Employee::total_salary=0;
 int Employee::member_count=0;
 
 void test(){
