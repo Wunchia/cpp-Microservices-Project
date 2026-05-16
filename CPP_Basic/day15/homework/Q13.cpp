@@ -45,6 +45,7 @@ public:
                 _wordNumbers[word].insert(lineNum);//记录行号 用下标添加未出现过的词进map 再用insert加入行号的set
             }
         }
+        ifs.close();
     }
 
     //查询单词
@@ -87,7 +88,7 @@ private:
 int main(int argc,char *argv[])
 {
     string fileName = "china_daily.txt"; 
-    string queryWord = "consumption";
+    string queryWord = "is";
 
     TextQuery tq;
     tq.readFile(fileName);
