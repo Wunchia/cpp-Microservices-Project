@@ -5,6 +5,7 @@
 using std::cin;
 using std::cout;
 using std::endl;
+using std::vector;
 
 template <typename T>
 class Stack{
@@ -19,7 +20,7 @@ public:
 
     //入栈（右值引用，优化移动语义）
     void push(T&& element){
-        element.push_back(std::move(element));
+        elements.push_back(std::move(element));
     }
 
     //出栈
@@ -59,7 +60,7 @@ struct Point{
     int x;
     int y;
 
-    friend std::ostream& operator<<(std::ostream os,const Point &p){
+    friend std::ostream& operator<<(std::ostream &os,const Point &p){
         os<<"("<<p.x<<", "<<p.y<<")";
         return os;
     }
@@ -114,10 +115,10 @@ int main(int argc,char *argv[])
     pointStack.push({5, 6});
     
     while (!pointStack.empty()) {
-        std::cout << "坐标栈顶: " << pointStack.top() << std::endl;
+        cout << "坐标栈顶: " << pointStack.top() << endl;
         pointStack.pop();
     }
-    std::cout << std::endl;
+    cout << endl;
 
     // ==========================================
     // 测试 4：异常处理 (边界测试)
