@@ -106,7 +106,7 @@ public:
         }
     }
 
-    //move constructor
+    //移动构造函数
     String(String && rhs)//只处理右值 右值引用绑定临时对象
     :m_pstr(rhs.m_pstr)//浅拷贝
     {
