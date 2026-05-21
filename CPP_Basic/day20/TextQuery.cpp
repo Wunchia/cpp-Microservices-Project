@@ -125,6 +125,11 @@ void runQueries(ifstream& infile){
         if(!(cin>>s)||s=="q"){
             break;
         }
+        string cleaned_s=clean_word(s);
+        if(cleaned_s.empty()){
+            cout<<"Invalid input"<<endl;
+            continue;
+        } 
         print(cout,tq.query(s))<<endl;
     }
 }
