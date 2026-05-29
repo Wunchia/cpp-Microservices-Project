@@ -38,8 +38,32 @@ int main(int argc,char *argv[])
         }
         cout<<"\r\n";
         cout<<"-------请求体-------"<<endl;
-        cout<<"request body: "<<req->body()<<endl;
-        
+        //================请求体文本=====================
+        cout<<"body: "<<req->body()<<endl;
+
+        //================请求体二进制（get_parsed_body）=====================
+        // const void* body_data=nullptr;
+        // size_t body_len=0;
+        // req->get_parsed_body(&body_data,&body_len);
+        // if(body_len>0&&body_data!=nullptr){
+        //     const unsigned char* byte_ptr=reinterpret_cast<const unsigned char*>(body_data);
+        //     size_t print_len=body_len;
+        //     for(size_t i=0;i<print_len;++i){
+        //         cout<<byte_ptr[i]<<" ";
+        //     }
+        //     cout<<endl;
+        // }else{
+        //     cout<<"Body is empty"<<endl;
+        // }
+
+        //================请求体二进制（string）=====================
+        // string binary_str=req->body();
+        // size_t body_len=binary_str.size();
+
+        // for(size_t i=0;i<body_len;++i){
+        //     cout<<binary_str[i]<<" ";
+        // }
+        // cout<<endl;
     });
 
 
