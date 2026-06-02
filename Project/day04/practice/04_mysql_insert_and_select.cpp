@@ -88,7 +88,6 @@ void select_callback(WFMySQLTask* task){
             cout<<endl;
         }
     }
-    waitGroup.done();
 }
 
 int main(int argc,char *argv[])
