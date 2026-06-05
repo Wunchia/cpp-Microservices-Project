@@ -1,6 +1,11 @@
+#include "CryptoUtil.h"
 #include "common.h"
+#include "error_pages.h"
+#include "success_pages.h"
 #include <fcntl.h>
+#include <wfrest/HttpMsg.h>
 #include <wfrest/HttpServer.h>
+#include <workflow/MySQLMessage.h>
 #include <workflow/WFHttpServer.h>
 #include <workflow/HttpMessage.h>
 #include <workflow/HttpUtil.h>
@@ -15,12 +20,98 @@ using namespace protocol;
 using namespace std::placeholders;
 
 //全局常量
-static const char* MYSQL_URL="mysql://root:123456@192.168.171.128/demo";
+static const char* MYSQL_URL="mysql://root:123456@localhost/demo";
 static const int MYSQL_RETRY=3;
 static const char* STATIC_DIR="resources";
 static const char* SERVER_NAME="LoveLanlanServer";
 
 WFFacilities::WaitGroup waitGroup(1);
+
+//===============工具函数===============
+static map<string,string> parse_form(const string& body){
+    map<string,string> form;
+    size_t key_start=0;
+    while(key_start<body.size()){
+        size_t eq_pos=body.find('=',key_start);
+        size_t amp_pos=body.find('&',eq_pos+1);
+        size_t val_end=(amp_pos==string::npos)?body.size():amp_pos;
+
+        string key=body.substr(key_start,eq_pos-key_start);
+        string value=body.substr(eq_pos+1,val_end-eq_pos-1);
+        form[key]=value;
+        key_start=val_end+1;
+    }
+    return form;
+}
+
+//===============回调函数===============
+void register_mysql_callback(WFMySQLTask* mysqlTask,HttpResponse* resp){
+    int state=mysqlTask->get_state();
+    if(state!=WFT_STATE_SUCCESS){
+        cerr<<WFGlobal::get_error_string(state, mysqlTask->get_error())<<endl;
+        return;
+    }
+
+    MySQLResponse* mysqlResp=mysqlTask->get_resp();
+    int err=mysqlResp->get_error_code();
+    if(err==1062){ //用户名重复
+        resp->set_status_code("409");
+        resp->append_output_body(R_409);
+    }else if(err!=0){
+        cerr<<"[REGISTER]：MySQL error,errno="<<err<<", msg="
+            <<mysqlResp->get_error_msg()<<endl;
+        resp->set_status_code("500");
+        resp->append_output_body(R_500);
+    }else{
+        resp->set_status_code("201");
+        resp->append_output_body(R_201);
+    }
+}
+
+
+
+//===============业务句柄===============
+static void handle_register(WFHttpTask* httpTask){
+    HttpRequest* req=httpTask->get_req();
+    HttpResponse* resp=httpTask->get_resp();
+
+    //解析数据 拿到 用户名 和 密码
+    const void *body; size_t size;
+    string username,password;
+    if(req->get_parsed_body(&body,&size)&&size>0){
+        auto form=parse_form(string(static_cast<const char*>(body),size));
+        username=form["username"];
+        password=form["password"];
+    }
+    //校验参数
+    if(username.empty()||password.empty()){
+        resp->set_status_code("400");
+        resp->append_output_body(R_400);
+        return;
+    }
+
+    //生成 盐值 和 哈希密码
+    string salt=CryptoUtil::generate_salt(8);
+    string hashcode=CryptoUtil::hash_password(password, salt);
+
+    //拼 sql 语句
+    string sql="INSERT INTO tbl_user (username,password,salt) VALUES ('"
+        +username+"','"+hashcode+"','"+salt+"')";
+
+    //创建 MySQL 任务
+    WFMySQLTask* mysqlTask=WFTaskFactory::create_mysql_task(
+        MYSQL_URL,MYSQL_RETRY,
+        bind(register_mysql_callback,_1,resp)
+    );
+    cout<<"[REGISTER] SQL: "<<sql<<endl;
+    mysqlTask->get_req()->set_query(sql);
+    series_of(httpTask)->push_back(mysqlTask);
+}
+
+
+static void handle_login(WFHttpTask* httpTask){
+
+}
 
 void pread_callback(WFFileIOTask* preadTask,HttpResponse* resp,string filename){
     //这里已经读完文件了 干点收尾的活
@@ -49,12 +140,25 @@ static void handle_file(WFHttpTask* httpTask){
     HttpResponse* resp=httpTask->get_resp();
 
     //--------------鉴权----------------
+    // 1.从Header中提取出Token
+    // 2.调用以后函数校验token
+    // 3.错误处理 验证失败返回 401
+    // string token=extract_bearer_token(req);
+    // if(token.empty()){
+    //     resp->set_status_code("401");
+    //     resp->append_output_body("[ERROR]:Authorization token is required");
+    //     return;
+    // }
 
     //-------------路径映射--------------
-    if(path=="/"){
-        path+="index.html";//展示服务器首页
+    string uri=req->get_request_uri();
+    auto pos=uri.find('?');
+    string uri_path=(pos!=string::npos)?uri.substr(0,pos):uri;
+    string path=uri_path.substr(strlen("/files"));
+    if(path=="/"||path.empty()){
+        path="/index.html";//展示服务器首页
     }
-    path="resources"+path;
+    path=STATIC_DIR+path;
     //从uri中截取出文件名
     string filename=path.substr(path.find_last_of('/')+1);
 
@@ -63,7 +167,7 @@ static void handle_file(WFHttpTask* httpTask){
     int fd=open(path.c_str(),O_RDONLY);//以只读方式打开
     if(fd==-1){
         resp->set_status_code("404");
-        resp->append_output_body("");
+        resp->append_output_body(R_404);
         return;
     }
     //获取文件大小
@@ -100,6 +204,7 @@ void process(WFHttpTask* httpTask){
     auto pos=uri.find('?');
     string path=(pos!=string::npos)?uri.substr(0,pos):uri;
 
+
     //路由分发
     if(method=="POST"&&path=="/register"){
         handle_register(httpTask);
@@ -109,167 +214,7 @@ void process(WFHttpTask* httpTask){
         handle_file(httpTask);
     }else{
         resp->set_status_code("404");
-        resp->append_output_body(R"(
-            <!DOCTYPE html>
-            <html lang="zh-CN">
-            <head>
-                <meta charset="UTF-8">
-                <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                <title>404 Not Found - 页面找不到了</title>
-                <style>
-                    * {
-                        margin: 0;
-                        padding: 0;
-                        box-sizing: border-box;
-                        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-                    }
-
-                    body {
-                        background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
-                        height: 100vh;
-                        display: flex;
-                        justify-content: center;
-                        align-items: center;
-                        overflow: hidden;
-                        color: #f8fafc;
-                    }
-
-                    /* 背景装饰浮动小球 */
-                    .circle {
-                        position: absolute;
-                        border-radius: 50%;
-                        background: linear-gradient(135deg, rgba(99, 102, 241, 0.15) 0%, rgba(168, 85, 247, 0.15) 100%);
-                        backdrop-filter: blur(10px);
-                        animation: float 8s infinite ease-in-out;
-                        z-index: 1;
-                    }
-
-                    .circle-1 {
-                        width: 300px;
-                        height: 300px;
-                        top: -10%,;
-                        left: -5%;
-                        animation-delay: 0s;
-                    }
-
-                    .circle-2 {
-                        width: 200px;
-                        height: 200px;
-                        bottom: 5%;
-                        right: -2%;
-                        animation-delay: -4s;
-                    }
-
-                    /* 主体容器 */
-                    .container {
-                        text-align: center;
-                        position: relative;
-                        z-index: 10;
-                        padding: 2rem;
-                        max-width: 500px;
-                        width: 90%;
-                    }
-
-                    /* 404 数字样式与动画 */
-                    .error-code {
-                        font-size: 8rem;
-                        font-weight: 900;
-                        line-height: 1;
-                        background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
-                        -webkit-background-clip: text;
-                        -webkit-text-fill-color: transparent;
-                        margin-bottom: 1rem;
-                        letter-spacing: -2px;
-                        animation: pulse 4s infinite ease-in-out;
-                    }
-
-                    /* 提示标题 */
-                    .error-title {
-                        font-size: 1.75rem;
-                        font-weight: 700;
-                        margin-bottom: 1rem;
-                        color: #f1f5f9;
-                    }
-
-                    /* 提示描述 */
-                    .error-message {
-                        font-size: 1rem;
-                        color: #94a3b8;
-                        margin-bottom: 2.5rem;
-                        line-height: 1.6;
-                    }
-
-                    /* 按钮样式 */
-                    .btn-home {
-                        display: inline-block;
-                        padding: 0.8rem 2rem;
-                        font-size: 1rem;
-                        font-weight: 600;
-                        color: #ffffff;
-                        text-decoration: none;
-                        background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
-                        border-radius: 50px;
-                        box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4);
-                        transition: all 0.3s ease;
-                    }
-
-                    .btn-home:hover {
-                        transform: translateY(-3px);
-                        box-shadow: 0 6px 20px rgba(99, 102, 241, 0.6);
-                        opacity: 0.95;
-                    }
-
-                    .btn-home:active {
-                        transform: translateY(-1px);
-                    }
-
-                    /* 动画效果定义 */
-                    @keyframes float {
-                        0%, 100% {
-                            transform: translateY(0) scale(1);
-                        }
-                        50% {
-                            transform: translateY(-20px) scale(1.05);
-                        }
-                    }
-
-                    @keyframes pulse {
-                        0%, 100% {
-                            transform: scale(1);
-                        }
-                        50% {
-                            transform: scale(1.03);
-                        }
-                    }
-
-                    /* 针对小屏幕的微调 */
-                    @media (max-width: 480px) {
-                        .error-code {
-                            font-size: 6rem;
-                        }
-                        .error-title {
-                            font-size: 1.4rem;
-                        }
-                    }
-                </style>
-            </head>
-            <body>
-
-                <div class="circle circle-1"></div>
-                <div class="circle circle-2"></div>
-
-                <div class="container">
-                    <div class="error-code">404</div>
-                    <h1 class="error-title">抱歉，页面迷路了</h1>
-                    <p class="error-message">
-                        你访问的页面可能已经被移除、更名，或者由于输入的网址有误而暂时不可用。
-                    </p>
-                    <a href="/" class="btn-home">返回首页</a>
-                </div>
-
-            </body>
-            </html>
-        )");
+        resp->append_output_body(R_404);
     }
 }
 
