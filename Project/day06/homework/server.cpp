@@ -14,6 +14,12 @@ using namespace std;
 using namespace protocol;
 using namespace std::placeholders;
 
+//全局常量
+static const char* MYSQL_URL="mysql://root:123456@192.168.171.128/demo";
+static const int MYSQL_RETRY=3;
+static const char* STATIC_DIR="resources";
+static const char* SERVER_NAME="LoveLanlanServer";
+
 WFFacilities::WaitGroup waitGroup(1);
 
 void pread_callback(WFFileIOTask* preadTask,HttpResponse* resp,string filename){
@@ -38,22 +44,13 @@ void pread_callback(WFFileIOTask* preadTask,HttpResponse* resp,string filename){
     resp->append_output_body_nocopy(args->buf,bytes);
 }
 
-void process(WFHttpTask* httpTask){
-    //----------------解析请求------------------
+static void handle_file(WFHttpTask* httpTask){
     HttpRequest* req=httpTask->get_req();
-    //下载文件应该通过GET方法 下载的文件在uri中给出
-    string uri=req->get_request_uri();
-    // <scheme>://<authority><path>?<query>#<fragment>
-    // get_request_uri给出的请求行中的路径部分 而非完整url
-    // 即 <path>?<query>
-    auto pos=uri.find('?');
-    string path;
-    if(pos!=string::npos){
-        path=uri.substr(0,pos);
-    }else{
-        path=uri;
-    }
-    //路径映射 映射到服务器的真实路径
+    HttpResponse* resp=httpTask->get_resp();
+
+    //--------------鉴权----------------
+
+    //-------------路径映射--------------
     if(path=="/"){
         path+="index.html";//展示服务器首页
     }
@@ -63,10 +60,54 @@ void process(WFHttpTask* httpTask){
 
     //-------------创建pread任务----------------
     //这里需要打开文件 如果打开失败需要通过响应头返回错误信息
-    HttpResponse* resp=httpTask->get_resp();
-    resp->add_header_pair("Server","Love_Lanlan_Server");
     int fd=open(path.c_str(),O_RDONLY);//以只读方式打开
     if(fd==-1){
+        resp->set_status_code("404");
+        resp->append_output_body("");
+        return;
+    }
+    //获取文件大小
+    struct stat statbuf;
+    fstat(fd,&statbuf);
+    size_t size=statbuf.st_size;
+
+    char* buf=(char*)malloc(size);
+    assert(buf!=NULL&&"buf malloc failed\n");
+    httpTask->set_callback([buf](WFHttpTask* httpTask){
+        free(buf);
+    });
+    //创建读文件任务
+    WFFileIOTask* preadTask=WFTaskFactory::create_pread_task(
+        fd,buf,size,0,bind(pread_callback,_1,resp,filename)
+    );
+
+    //-----------将pread任务添加进序列-----------
+    series_of(httpTask)->push_back(preadTask);
+}
+
+
+void process(WFHttpTask* httpTask){
+    //----------------解析请求------------------
+    HttpRequest* req=httpTask->get_req();
+    HttpResponse* resp=httpTask->get_resp();
+    resp->add_header_pair("Server",SERVER_NAME);
+    string method=req->get_method();
+    //下载文件应该通过GET方法 下载的文件在uri中给出
+    string uri=req->get_request_uri();
+    // <scheme>://<authority><path>?<query>#<fragment>
+    // get_request_uri给出的请求行中的路径部分 而非完整url
+    // 即 <path>?<query>
+    auto pos=uri.find('?');
+    string path=(pos!=string::npos)?uri.substr(0,pos):uri;
+
+    //路由分发
+    if(method=="POST"&&path=="/register"){
+        handle_register(httpTask);
+    }else if(method=="POST"&&path=="/login"){
+        handle_login(httpTask);
+    }else if(method=="GET"&&path.find("/files/")==0){
+        handle_file(httpTask);
+    }else{
         resp->set_status_code("404");
         resp->append_output_body(R"(
             <!DOCTYPE html>
@@ -229,25 +270,7 @@ void process(WFHttpTask* httpTask){
             </body>
             </html>
         )");
-        return;
     }
-    //获取文件大小
-    struct stat statbuf;
-    fstat(fd,&statbuf);
-    size_t size=statbuf.st_size;
-
-    char* buf=(char*)malloc(size);
-    assert(buf!=NULL&&"buf malloc failed\n");
-    httpTask->set_callback([buf](WFHttpTask* httpTask){
-        free(buf);
-    });
-    //创建读文件任务
-    WFFileIOTask* preadTask=WFTaskFactory::create_pread_task(
-        fd,buf,size,0,bind(pread_callback,_1,resp,filename)
-    );
-
-    //-----------将pread任务添加进序列-----------
-    series_of(httpTask)->push_back(preadTask);
 }
 
 
