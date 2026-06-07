@@ -8,6 +8,7 @@
 #include <workflow/MySQLMessage.h>
 #include <workflow/WFHttpServer.h>
 #include <workflow/HttpMessage.h>
+#include <workflow/MySQLResult.h>
 #include <workflow/HttpUtil.h>
 #include <workflow/WFTask.h>
 #include <workflow/WFTaskFactory.h>
@@ -18,6 +19,7 @@
 using namespace std;
 using namespace protocol;
 using namespace std::placeholders;
+using namespace protocol;
 
 //全局常量
 static const char* MYSQL_URL="mysql://root:123456@localhost/demo";
@@ -28,6 +30,7 @@ static const char* SERVER_NAME="LoveLanlanServer";
 WFFacilities::WaitGroup waitGroup(1);
 
 //===============工具函数===============
+//从请求中取出 name 和 password 用map存储
 static map<string,string> parse_form(const string& body){
     map<string,string> form;
     size_t key_start=0;
@@ -42,6 +45,22 @@ static map<string,string> parse_form(const string& body){
         key_start=val_end+1;
     }
     return form;
+}
+
+//从请求中取出token并进行比较
+static string extract_bearer_token(HttpRequest* req){
+    HttpHeaderCursor cursor(req);
+    string name,value;
+    while(cursor.next(name,value)){
+        cerr<<"[DEBUG] header: '"<<name<<"' = '"<<value<<"'"<<endl;
+        if(name=="Authorization"){
+            const string prefix="Bearer ";
+            if(value.size()>prefix.size()&&value.compare(0,prefix.size(),prefix)==0){
+                return value.substr(prefix.size());
+            }
+        }
+    }
+    return "";
 }
 
 //===============回调函数===============
@@ -68,7 +87,66 @@ void register_mysql_callback(WFMySQLTask* mysqlTask,HttpResponse* resp){
     }
 }
 
+void login_mysql_callback(WFMySQLTask* mysqlTask,HttpResponse* resp,const string password){
+    int state=mysqlTask->get_state();
+    if(state!=WFT_STATE_SUCCESS){
+        resp->set_status_code("500");
+        resp->append_output_body(R_500);
+        return;
+    }
 
+    MySQLResultCursor cursor(mysqlTask->get_resp());
+
+    vector<vector<MySQLCell>>rows;
+    cursor.fetch_all(rows);
+
+    if(rows.empty()){
+        resp->set_status_code("401");
+        resp->append_output_body(R_401);
+        return;
+    }
+
+    string stored_hash=rows[0][0].as_string();//password
+    string salt=rows[0][1].as_string();//salt
+    int uid=rows[0][2].as_int();//id
+    string uname=rows[0][3].as_string();//username
+
+    string computed=CryptoUtil::hash_password(password, salt);
+    if(computed!=stored_hash){
+        resp->set_status_code("401");
+        resp->append_output_body(R_401);
+        return;
+    }
+
+    //签发Token
+    User user{uid,uname,"",""};
+    string token=CryptoUtil::generate_token(user);
+
+    resp->set_status_code("200");
+    resp->append_output_body(R"({"token":")"+token+R"("})");
+}
+
+void pread_callback(WFFileIOTask* preadTask,HttpResponse* resp,string filename){
+    //这里已经读完文件了 干点收尾的活
+    //--------------获取参数和返回值----------------
+    FileIOArgs* args=preadTask->get_args();
+    close(args->fd);
+    long bytes=preadTask->get_retval();//实际读取的字节数
+
+    //------------判断任务的状态 处理错误------------
+    int state=preadTask->get_state();
+    if(state!=WFT_STATE_SUCCESS){
+        cerr<<WFGlobal::get_error_string(state, preadTask->get_error())<<endl;
+        resp->set_status_code("500");
+        resp->append_output_body("<html>500 Server Internal Error.</html>");
+        return;
+    }
+
+    //-----------将文件内容追加到响应体中------------
+    resp->add_header_pair("Content-Disposition",R"(attachment;
+        filename=)"+filename);
+    resp->append_output_body_nocopy(args->buf,bytes);
+}
 
 //===============业务句柄===============
 static void handle_register(WFHttpTask* httpTask){
@@ -108,31 +186,37 @@ static void handle_register(WFHttpTask* httpTask){
     series_of(httpTask)->push_back(mysqlTask);
 }
 
-
 static void handle_login(WFHttpTask* httpTask){
+    HttpRequest* req=httpTask->get_req();
+    HttpResponse*resp=httpTask->get_resp();
 
-}
+    //解析表单
+    const void* body;
+    size_t size;
+    string username,password;
+    if(req->get_parsed_body(&body, &size)&&size>0){
+        auto form=parse_form(string(static_cast<const char*>(body),size));
+        username=form["username"];
+        password=form["password"];
+    }
 
-void pread_callback(WFFileIOTask* preadTask,HttpResponse* resp,string filename){
-    //这里已经读完文件了 干点收尾的活
-    //--------------获取参数和返回值----------------
-    FileIOArgs* args=preadTask->get_args();
-    close(args->fd);
-    long bytes=preadTask->get_retval();//实际读取的字节数
-
-    //------------判断任务的状态 处理错误------------
-    int state=preadTask->get_state();
-    if(state!=WFT_STATE_SUCCESS){
-        cerr<<WFGlobal::get_error_string(state, preadTask->get_error())<<endl;
-        resp->set_status_code("500");
-        resp->append_output_body("<html>500 Server Internal Error.</html>");
+    if(username.empty()||password.empty()){
+        resp->set_status_code("400");
+        resp->append_output_body(R_400);
         return;
     }
 
-    //-----------将文件内容追加到响应体中------------
-    resp->add_header_pair("Content-Disposition",R"(attachment;
-        filename=)"+filename);
-    resp->append_output_body_nocopy(args->buf,bytes);
+    //拼sql
+    string sql="SELECT password,salt,id,username FROM tbl_user"
+        " WHERE username='"+username+"' AND tomb=0";
+
+    auto* mysqlTask=WFTaskFactory::create_mysql_task(
+        MYSQL_URL,MYSQL_RETRY,
+        bind(login_mysql_callback,_1,resp,password)
+    );
+
+    mysqlTask->get_req()->set_query(sql);
+    series_of(httpTask)->push_back(mysqlTask);
 }
 
 static void handle_file(WFHttpTask* httpTask){
@@ -143,12 +227,13 @@ static void handle_file(WFHttpTask* httpTask){
     // 1.从Header中提取出Token
     // 2.调用以后函数校验token
     // 3.错误处理 验证失败返回 401
-    // string token=extract_bearer_token(req);
-    // if(token.empty()){
-    //     resp->set_status_code("401");
-    //     resp->append_output_body("[ERROR]:Authorization token is required");
-    //     return;
-    // }
+    string token=extract_bearer_token(req);
+    User user;
+    if(token.empty()||!CryptoUtil::verify_token(token, user)){
+        resp->set_status_code("401");
+        resp->append_output_body(R_401);
+        return;
+    }
 
     //-------------路径映射--------------
     string uri=req->get_request_uri();
@@ -189,7 +274,7 @@ static void handle_file(WFHttpTask* httpTask){
     series_of(httpTask)->push_back(preadTask);
 }
 
-
+//===============主流程==================
 void process(WFHttpTask* httpTask){
     //----------------解析请求------------------
     HttpRequest* req=httpTask->get_req();
@@ -218,11 +303,11 @@ void process(WFHttpTask* httpTask){
     }
 }
 
-
 void sig_handler(int signo){
     waitGroup.done();
 }
 
+//===============程序入口================
 int main(int argc,char *argv[]){
     //通过信号结束进程
     signal(SIGINT,sig_handler);
