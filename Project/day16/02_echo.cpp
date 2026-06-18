@@ -1,5 +1,6 @@
 #include <arpa/inet.h>
-#include <asm-generic/socket.h>
+#include <cctype>
+#include <unistd.h>
 #include <cstring>
 #include <iostream>
 #include <netinet/in.h>
@@ -21,10 +22,11 @@ int tcp_listen(uint16_t port){
 
     struct sockaddr_in addr{};
     addr.sin_family=AF_INET;
-    addr.sin_port=port;
+    addr.sin_port=htons(port);
     addr.sin_addr.s_addr=INADDR_ANY;
     if(bind(sockfd,(struct sockaddr*)&addr,sizeof(addr))<0){
         cerr<<"[ERROR]:bind()"<<endl;
+        exit(-1);
     }
 
     listen(sockfd,BACKLOG);
@@ -84,11 +86,27 @@ int main(int argc,char *argv[])
                 int connfd=events[i].data.fd;
                 char buf[4096];
                 int nbytes=recv(connfd,buf,sizeof(buf),0);
+                if(nbytes<0){
+                    cerr<<"recv error"<<endl;
+                    epoll_ctl(epfd,EPOLL_CTL_DEL, connfd, NULL);
+                    close(connfd);
+                }else if(nbytes==0){
             // 事件二：客户端断开连接
+                    epoll_ctl(epfd,EPOLL_CTL_DEL, connfd, NULL);
+                    close(connfd);
+                    cout<<"client: "<<connfd<<" is closed."<<endl;
+                }else{
             // 事件三：客户端有消息到达
+                    for(int j=0;j<nbytes;++j){
+                        buf[j]=toupper(buf[j]);
+                    }
+            // 事件3.5：消息发送完毕（本机写入成功）
+                    send(connfd,buf,nbytes,0);
+                    // send只代表把数据从应用缓冲区拷贝到了内核TCP缓冲区
+                    // 不代表对端应用层收到了数据 只能算半个事件
+                    printf("send data: %.*s\n",nbytes,buf);
+                }
             }
         }
     }
-
-    return 0;
 }
